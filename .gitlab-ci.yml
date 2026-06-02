@@ -30,11 +30,13 @@ build:
         --platform $PLATFORM \
         --build-arg BUILD_VARIANT=$VARIANT \
         --tag $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} \
+        --provenance=false \
         --push \
         .
     - |
       mkdir -p digests/$VARIANT
-      digest=$(docker buildx imagetools inspect $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} --format '{{.Manifest.Digest}}')
+      digest=$(docker buildx imagetools inspect $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} \
+        | grep -E '^Digest:' | awk '{print $2}')
       touch "digests/$VARIANT/${digest#sha256:}"
     - docker buildx imagetools remove $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} || true
   rules:
