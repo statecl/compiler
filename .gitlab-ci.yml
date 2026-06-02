@@ -16,8 +16,6 @@ build:
     matrix:
       - VARIANT: [Release, Debug]
         PLATFORM: [linux/amd64, linux/arm64]
-  tags:
-    - arm64
   artifacts:
     paths:
       - digests/
