@@ -1,4 +1,4 @@
-FROM debian:bookworm-20250512 AS base
+FROM debian:bookworm-20260518 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
