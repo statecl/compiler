@@ -18,8 +18,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        distro: [alpine, debian, ubuntu, fedora]
+        variant: [release, debug, asan, tsan, ubsan]
         os: [ubuntu-latest, ubuntu-24.04-arm]
-        variant: [Release, Debug]
+        exclude:
+          - distro: alpine
+            variant: asan
+          - distro: alpine
+            variant: tsan
+          - distro: alpine
+            variant: ubsan
         include:
           - os: ubuntu-latest
             platform: linux/amd64
@@ -44,34 +52,40 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Map variant to build args and suffix
+        id: args
+        run: |
+          case ${{ matrix.variant }} in
+            release) echo "build_variant=Release" >> "$GITHUB_OUTPUT"; echo "sanitizer=off" >> "$GITHUB_OUTPUT"; echo "suffix=release" >> "$GITHUB_OUTPUT" ;;
+            debug)   echo "build_variant=Debug" >> "$GITHUB_OUTPUT";   echo "sanitizer=off" >> "$GITHUB_OUTPUT"; echo "suffix=debug" >> "$GITHUB_OUTPUT" ;;
+            asan)    echo "build_variant=Debug" >> "$GITHUB_OUTPUT";   echo "sanitizer=asan" >> "$GITHUB_OUTPUT"; echo "suffix=debug-asan" >> "$GITHUB_OUTPUT" ;;
+            tsan)    echo "build_variant=Debug" >> "$GITHUB_OUTPUT";   echo "sanitizer=tsan" >> "$GITHUB_OUTPUT"; echo "suffix=debug-tsan" >> "$GITHUB_OUTPUT" ;;
+            ubsan)   echo "build_variant=Debug" >> "$GITHUB_OUTPUT";   echo "sanitizer=ubsan" >> "$GITHUB_OUTPUT"; echo "suffix=debug-ubsan" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ${{ matrix.distro }}/Dockerfile
           platforms: ${{ matrix.platform }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILD_VARIANT=${{ matrix.variant }}
+            BUILD_VARIANT=${{ steps.args.outputs.build_variant }}
+            SANITIZER=${{ steps.args.outputs.sanitizer }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
-          mkdir -p /tmp/digests/${{ matrix.variant }}
+          mkdir -p "/tmp/digests/${{ matrix.distro }}/${{ matrix.variant }}"
           digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${{ matrix.variant }}/${digest#sha256:}"
+          touch "/tmp/digests/${{ matrix.distro }}/${{ matrix.variant }}/${digest#sha256:}"
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.variant }}-${{ strategy.job-index }}
-          path: /tmp/digests/${{ matrix.variant }}/*
+          name: digests-${{ matrix.distro }}-${{ matrix.variant }}-${{ strategy.job-index }}
+          path: "/tmp/digests/${{ matrix.distro }}/${{ matrix.variant }}/*"
           if-no-files-found: error
           retention-days: 1
 
@@ -84,14 +98,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [Release, Debug]
+        distro: [alpine, debian, ubuntu, fedora]
+        variant: [release, debug, asan, tsan, ubsan]
+        exclude:
+          - distro: alpine
+            variant: asan
+          - distro: alpine
+            variant: tsan
+          - distro: alpine
+            variant: ubsan
 
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
-          path: /tmp/digests/${{ matrix.variant }}
-          pattern: digests-${{ matrix.variant }}-*
+          path: "/tmp/digests/${{ matrix.distro }}/${{ matrix.variant }}"
+          pattern: digests-${{ matrix.distro }}-${{ matrix.variant }}-*
           merge-multiple: true
 
       - name: Log in to the Container registry
@@ -104,34 +126,64 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Set variant suffix
-        id: variant
+      - name: Map variant to tag suffix
+        id: suffix
         run: |
-          echo "suffix=$(echo '${{ matrix.variant }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          case ${{ matrix.variant }} in
+            release) echo "suffix=release" >> "$GITHUB_OUTPUT" ;;
+            debug)   echo "suffix=debug" >> "$GITHUB_OUTPUT" ;;
+            asan)    echo "suffix=debug-asan" >> "$GITHUB_OUTPUT" ;;
+            tsan)    echo "suffix=debug-tsan" >> "$GITHUB_OUTPUT" ;;
+            ubsan)   echo "suffix=debug-ubsan" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       - name: Create manifest list and push
-        working-directory: /tmp/digests/${{ matrix.variant }}
+        working-directory: "/tmp/digests/${{ matrix.distro }}/${{ matrix.variant }}"
         run: |
-          TAG_ARGS="--tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}-${{ steps.variant.outputs.suffix }}"
+          SUFFIX="${{ steps.suffix.outputs.suffix }}"
+          DISTRO="${{ matrix.distro }}"
+
+          TAG_ARGS="--tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}-${SUFFIX}-${DISTRO}"
 
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            TAG_ARGS="$TAG_ARGS --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ steps.variant.outputs.suffix }}"
+            TAG_ARGS="$TAG_ARGS --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${SUFFIX}-${DISTRO}"
           fi
 
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
-            TAG_ARGS="$TAG_ARGS --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${VERSION}-${{ steps.variant.outputs.suffix }}"
+            TAG_ARGS="$TAG_ARGS --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${VERSION}-${SUFFIX}-${DISTRO}"
           fi
+
+          for f in *; do
+            [ -f "$f" ] || continue
+            platform="${f%%@*}"
+            arch="${platform##*-}"
+            sha256="${f#*@}"
+
+            if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+              docker buildx imagetools create \
+                --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${SUFFIX}-${DISTRO}-${arch} \
+                ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:$sha256
+            fi
+            if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+              VERSION="${GITHUB_REF_NAME#v}"
+              docker buildx imagetools create \
+                --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${VERSION}-${SUFFIX}-${DISTRO}-${arch} \
+                ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:$sha256
+            fi
+          done
 
           docker buildx imagetools create $TAG_ARGS \
             $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
+          SUFFIX="${{ steps.suffix.outputs.suffix }}"
+          DISTRO="${{ matrix.distro }}"
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ steps.variant.outputs.suffix }}
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${SUFFIX}-${DISTRO}
           fi
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
-            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${VERSION}-${{ steps.variant.outputs.suffix }}
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${VERSION}-${SUFFIX}-${DISTRO}
           fi
