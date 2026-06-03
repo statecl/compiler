@@ -54,52 +54,6 @@ RUN if [ "$BUILD_VARIANT" = "Debug" ]; then \
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 
-# Build libunwind (Static)
-RUN git clone https://github.com/libunwind/libunwind.git /tmp/libunwind && \
-    cd /tmp/libunwind && \
-    autoreconf -i && \
-    ./configure --enable-static --disable-shared && \
-    make -j$(nproc) && \
-    make install && \
-    rm -rf /tmp/libunwind
-
-# Build spdlog (v1.16.0)
-RUN git clone https://github.com/gabime/spdlog.git /tmp/spdlog && \
-    cd /tmp/spdlog && \
-    git checkout tags/v1.16.0 && \
-    if [ "$BUILD_VARIANT" = "Debug" ]; then SHARED=ON; else SHARED=OFF; fi && \
-    cmake -S . -B build \
-        -DCMAKE_BUILD_TYPE="$BUILD_VARIANT" \
-        -DSPDLOG_BUILD_SHARED="$SHARED" \
-        -DSPDLOG_FMT_EXTERNAL=OFF && \
-    cmake --build build --target install --parallel $(nproc) && \
-    rm -rf /tmp/spdlog
-
-# Build fmt (12.1.0)
-RUN git clone https://github.com/fmtlib/fmt.git /tmp/fmt && \
-    cd /tmp/fmt && \
-    git checkout tags/12.1.0 && \
-    if [ "$BUILD_VARIANT" = "Debug" ]; then SHARED=ON; else SHARED=OFF; fi && \
-    cmake -S . -B build \
-        -DCMAKE_BUILD_TYPE="$BUILD_VARIANT" \
-        -DBUILD_SHARED_LIBS="$SHARED" \
-        -DFMT_DOC=OFF \
-        -DFMT_TEST=OFF \
-        -DFMT_FUZZ=OFF \
-        -DFMT_CUDA_TEST=OFF && \
-    cmake --build build --target install --parallel $(nproc) && \
-    rm -rf /tmp/fmt
-
-# Build libbcrypt
-RUN git clone https://github.com/Zen0x7/libbcrypt.git /tmp/bcrypt && \
-    cd /tmp/bcrypt && \
-    if [ "$BUILD_VARIANT" = "Debug" ]; then SHARED=ON; else SHARED=OFF; fi && \
-    cmake -S . -B build \
-        -DCMAKE_BUILD_TYPE="$BUILD_VARIANT" \
-        -DBUILD_SHARED_LIBS="$SHARED" && \
-    cmake --build build --target install --parallel $(nproc) && \
-    rm -rf /tmp/bcrypt
-
 # Build FlatBuffers (v23.5.26)
 RUN git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers && \
     cd /tmp/flatbuffers && \
@@ -118,11 +72,17 @@ RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
     wget https://archives.boost.io/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_DASH.tar.gz && \
     tar -xf boost_$BOOST_VERSION_DASH.tar.gz && \
     cd boost_$BOOST_VERSION_DASH && \
-    sh bootstrap.sh --with-libraries=all && \
+    sh bootstrap.sh && \
     if [ "$BUILD_VARIANT" = "Debug" ]; then \
-        ./b2 install variant=debug debug-symbols=on link=shared runtime-link=shared --without-python -j$(nproc); \
+        ./b2 install \
+            --with-json --with-program_options --with-charconv --with-system --with-uuid \
+            variant=debug debug-symbols=on link=shared runtime-link=shared \
+            -j$(nproc); \
     else \
-        ./b2 install variant=release debug-symbols=off link=static runtime-link=static optimization=speed --without-python -j$(nproc); \
+        ./b2 install \
+            --with-json --with-program_options --with-charconv --with-system --with-uuid \
+            variant=release debug-symbols=off link=static runtime-link=static optimization=speed \
+            -j$(nproc); \
     fi && \
     cd .. && \
     rm -rf boost_$BOOST_VERSION_DASH boost_$BOOST_VERSION_DASH.tar.gz
