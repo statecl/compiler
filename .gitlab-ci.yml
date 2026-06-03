@@ -34,10 +34,11 @@ build:
         --push \
         .
     - |
+      PLATFORM_FILE=$(echo "$PLATFORM" | tr '/' '-')
       mkdir -p digests/$VARIANT
       digest=$(docker buildx imagetools inspect $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} \
         | grep -E '^Digest:' | awk '{print $2}')
-      touch "digests/$VARIANT/${digest#sha256:}"
+      touch "digests/$VARIANT/${PLATFORM_FILE}@${digest#sha256:}"
     - docker buildx imagetools remove $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} || true
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
@@ -74,9 +75,28 @@ merge:
 
       REF_ARGS=""
       for f in digests/$VARIANT/*; do
-        REF_ARGS="$REF_ARGS $CI_REGISTRY_IMAGE@sha256:$(basename $f)"
+        filename=$(basename "$f")
+        platform="${filename%%@*}"
+        sha="${filename#*@}"
+        arch="${platform##*-}"
+
+        REF_ARGS="$REF_ARGS $CI_REGISTRY_IMAGE@sha256:$sha"
+
+        # Single-arch tags (point directly to the platform-specific image)
+        if [ "$CI_COMMIT_BRANCH" = "master" ]; then
+          docker buildx imagetools create \
+            --tag $CI_REGISTRY_IMAGE:latest-${SUFFIX}-${arch} \
+            $CI_REGISTRY_IMAGE@sha256:$sha
+        fi
+        if echo "$CI_COMMIT_TAG" | grep -q '^v'; then
+          VERSION="${CI_COMMIT_TAG#v}"
+          docker buildx imagetools create \
+            --tag $CI_REGISTRY_IMAGE:v${VERSION}-${SUFFIX}-${arch} \
+            $CI_REGISTRY_IMAGE@sha256:$sha
+        fi
       done
 
+      # Multi-arch manifest (combines both platforms)
       docker buildx imagetools create $TAG_ARGS $REF_ARGS
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
