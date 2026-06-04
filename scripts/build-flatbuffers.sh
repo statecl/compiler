@@ -39,5 +39,5 @@ if [ "$SANITIZER" != "off" ]; then
 fi
 
 cmake -S . -B build "${CMAKE_ARGS[@]}"
-cmake --build build --target install --parallel "$(nproc)"
+cmake --build build --target install --parallel 2
 rm -rf /tmp/flatbuffers

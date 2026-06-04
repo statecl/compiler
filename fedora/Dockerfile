@@ -10,11 +10,9 @@ RUN dnf clean all && \
     cmake \
     git \
     wget \
-    ca-certificates \
-    pkgconfig \
+    pkgconf-pkg-config \
     zip \
     unzip \
-    tzdata \
     libtool \
     automake \
     m4 \
@@ -29,7 +27,7 @@ RUN dnf clean all && \
     gcovr \
     lcov \
     autoconf \
-    nghttp2-devel \
+    libnghttp2-devel \
     kernel-headers \
     && dnf clean all
 
