@@ -1,15 +1,15 @@
-FROM fedora:41 AS base
+FROM fedora:44 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
 
-RUN dnf install -y --setopt=install_weak_deps=False \
+RUN dnf clean all && \
+    dnf install -y --setopt=install_weak_deps=False --setopt=zchunk=False \
     gcc-c++ \
     clang \
     cmake \
     git \
     wget \
-    curl \
     ca-certificates \
     pkgconfig \
     zip \
@@ -34,7 +34,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
     && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
-    dnf install -y --setopt=install_weak_deps=False \
+    dnf install -y --setopt=install_weak_deps=False --setopt=zchunk=False \
         gdb \
         && dnf clean all; \
     fi
