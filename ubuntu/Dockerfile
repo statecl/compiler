@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS base
+FROM ubuntu:latest AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off

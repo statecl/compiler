@@ -1,4 +1,4 @@
-FROM alpine:3.21.3 AS base
+FROM alpine:latest AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
