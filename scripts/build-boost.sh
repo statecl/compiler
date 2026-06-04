@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-BOOST_VERSION="${BOOST_VERSION:-1.90.0}"
+BOOST_VERSION="${BOOST_VERSION:-1.91.0}"
 BUILD_VARIANT="${BUILD_VARIANT:-Release}"
 SANITIZER="${SANITIZER:-off}"
 
-BOOST_LIBS="--with-json --with-program_options --with-charconv --with-system --with-uuid"
+BOOST_LIBS="--with-json --with-program_options --with-charconv"
 BOOST_VERSION_DASH="${BOOST_VERSION//./_}"
 BOOST_URL="https://archives.boost.io/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_DASH.tar.gz"
 

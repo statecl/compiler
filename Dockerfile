@@ -66,8 +66,8 @@ RUN git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers && \
     cmake --build build --target install --parallel 2 && \
     rm -rf /tmp/flatbuffers
 
-# Build Boost 1.90.0
-ARG BOOST_VERSION="1.90.0"
+# Build Boost 1.91.0
+ARG BOOST_VERSION="1.91.0"
 RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
     wget https://archives.boost.io/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_DASH.tar.gz && \
     tar -xf boost_$BOOST_VERSION_DASH.tar.gz && \
@@ -75,12 +75,12 @@ RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
     sh bootstrap.sh && \
     if [ "$BUILD_VARIANT" = "Debug" ]; then \
         ./b2 install \
-            --with-json --with-program_options --with-charconv --with-system --with-uuid \
+            --with-json --with-program_options --with-charconv \
             variant=debug debug-symbols=on link=shared runtime-link=shared \
             -j2; \
     else \
         ./b2 install \
-            --with-json --with-program_options --with-charconv --with-system --with-uuid \
+            --with-json --with-program_options --with-charconv \
             variant=release debug-symbols=off link=static runtime-link=static optimization=speed \
             -j2; \
     fi && \

@@ -51,7 +51,7 @@ RUN FLATBUFFERS_VERSION=v23.5.26 \
     /tmp/build-flatbuffers.sh
 
 COPY scripts/build-boost.sh /tmp/build-boost.sh
-RUN BOOST_VERSION=1.90.0 \
+RUN BOOST_VERSION=1.91.0 \
     BUILD_VARIANT=$BUILD_VARIANT \
     SANITIZER=$SANITIZER \
     /tmp/build-boost.sh
