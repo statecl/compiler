@@ -34,6 +34,9 @@ RUN dnf clean all && \
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
     dnf install -y --setopt=install_weak_deps=False --setopt=zchunk=False \
         gdb \
+        libasan \
+        libtsan \
+        libubsan \
         && dnf clean all; \
     fi
 
