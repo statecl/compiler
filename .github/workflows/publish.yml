@@ -1,26 +1,24 @@
-name: Publish Docker Image
+name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-      - master
-    tags:
-      - 'v*'
+    branches: [master]
+    tags: ['v*']
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: statecl/environment
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         distro: [alpine, debian, ubuntu, fedora]
         variant: [release, debug, asan, tsan, ubsan]
-        os: [ubuntu-latest, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
         exclude:
           - distro: alpine
             variant: asan
@@ -28,31 +26,23 @@ jobs:
             variant: tsan
           - distro: alpine
             variant: ubsan
-        include:
-          - os: ubuntu-latest
-            platform: linux/amd64
-          - os: ubuntu-24.04-arm
-            platform: linux/arm64
-
+    env:
+      PLATFORM: ${{ matrix.runner == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Map variant to build args and suffix
+      - name: Map variant
         id: args
         run: |
           case ${{ matrix.variant }} in
@@ -69,11 +59,12 @@ jobs:
         with:
           context: .
           file: ${{ matrix.distro }}/Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ env.PLATFORM }}
           build-args: |
             BUILD_VARIANT=${{ steps.args.outputs.build_variant }}
             SANITIZER=${{ steps.args.outputs.sanitizer }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          provenance: false
 
       - name: Export digest
         run: |
@@ -94,7 +85,6 @@ jobs:
     needs: build
     permissions:
       packages: write
-
     strategy:
       fail-fast: false
       matrix:
@@ -107,7 +97,6 @@ jobs:
             variant: tsan
           - distro: alpine
             variant: ubsan
-
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -116,17 +105,15 @@ jobs:
           pattern: digests-${{ matrix.distro }}-${{ matrix.variant }}-*
           merge-multiple: true
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Map variant to tag suffix
+      - name: Map variant
         id: suffix
         run: |
           case ${{ matrix.variant }} in
@@ -143,7 +130,7 @@ jobs:
           SUFFIX="${{ steps.suffix.outputs.suffix }}"
           DISTRO="${{ matrix.distro }}"
 
-          TAG_ARGS="--tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}-${SUFFIX}-${DISTRO}"
+          TAG_ARGS="--tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::8}-${SUFFIX}-${DISTRO}"
 
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             TAG_ARGS="$TAG_ARGS --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${SUFFIX}-${DISTRO}"
