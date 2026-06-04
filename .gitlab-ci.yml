@@ -1,6 +1,5 @@
 stages:
   - build
-  - merge
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -12,13 +11,13 @@ variables:
   services:
     - name: docker:27-dind
       command: ["--mtu=1400"]
-  artifacts:
-    paths:
-      - digests/
-    expire_in: 1 day
+
   before_script:
-    - docker buildx create --use --driver docker-container
+    - export BUILDER_NAME=builder-${CI_PIPELINE_ID}-${CI_JOB_ID}
+    - docker buildx create --name $BUILDER_NAME --use --driver docker-container
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  after_script:
+    - docker buildx rm $BUILDER_NAME --force || true
   script:
     - |
       case $VARIANT in
@@ -29,26 +28,31 @@ variables:
         ubsan)   BUILD_VARIANT=Debug;   SANITIZER=ubsan;  SUFFIX="debug-ubsan" ;;
       esac
 
+      ARCH=$(echo "$PLATFORM" | cut -d/ -f2)
       BUILD_ARGS="--build-arg BUILD_VARIANT=$BUILD_VARIANT"
       if [ "$SANITIZER" != "off" ]; then
         BUILD_ARGS="$BUILD_ARGS --build-arg SANITIZER=$SANITIZER"
+      fi
+
+      TAGS="--tag $CI_REGISTRY_IMAGE:sha-${CI_COMMIT_SHORT_SHA}-${SUFFIX}-${DISTRO}-${ARCH}"
+
+      if [ "$CI_COMMIT_BRANCH" = "master" ]; then
+        TAGS="$TAGS --tag $CI_REGISTRY_IMAGE:latest-${SUFFIX}-${DISTRO}-${ARCH}"
+      fi
+
+      if echo "$CI_COMMIT_TAG" | grep -q '^v'; then
+        VERSION="${CI_COMMIT_TAG#v}"
+        TAGS="$TAGS --tag $CI_REGISTRY_IMAGE:v${VERSION}-${SUFFIX}-${DISTRO}-${ARCH}"
       fi
 
       docker buildx build \
         --platform $PLATFORM \
         -f $DISTRO/Dockerfile \
         $BUILD_ARGS \
-        --tag $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} \
+        $TAGS \
         --provenance=false \
         --push \
         .
-
-      PLATFORM_FILE=$(echo "$PLATFORM" | tr '/' '-')
-      mkdir -p "digests/$DISTRO/$VARIANT"
-      digest=$(docker buildx imagetools inspect $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} \
-        | grep -E '^Digest:' | awk '{print $2}')
-      touch "digests/$DISTRO/$VARIANT/${PLATFORM_FILE}@${digest#sha256:}"
-    - docker buildx imagetools remove $CI_REGISTRY_IMAGE:ci-${CI_JOB_ID} || true
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
     - if: $CI_COMMIT_TAG =~ /^v.*/
@@ -79,75 +83,4 @@ build:arm64:
         VARIANT: [release, debug, asan, tsan, ubsan]
         PLATFORM: linux/arm64
 
-merge:
-  stage: merge
-  image: docker:27-cli
-  tags: [arm64]
-  services:
-    - name: docker:27-dind
-      command: ["--mtu=1400"]
-  parallel:
-    matrix:
-      - DISTRO: alpine
-        VARIANT: [release, debug]
-      - DISTRO: [debian, ubuntu, fedora]
-        VARIANT: [release, debug, asan, tsan, ubsan]
-  needs:
-    - job: build:amd64
-      artifacts: true
-    - job: build:arm64
-      artifacts: true
-  before_script:
-    - docker buildx create --use --driver docker-container
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - |
-      case $VARIANT in
-        release) SUFFIX="release" ;;
-        debug)   SUFFIX="debug" ;;
-        asan)    SUFFIX="debug-asan" ;;
-        tsan)    SUFFIX="debug-tsan" ;;
-        ubsan)   SUFFIX="debug-ubsan" ;;
-      esac
 
-      VERSION=""
-      if echo "$CI_COMMIT_TAG" | grep -q '^v'; then
-        VERSION="${CI_COMMIT_TAG#v}"
-      fi
-
-      TAG_ARGS="--tag $CI_REGISTRY_IMAGE:sha-${CI_COMMIT_SHORT_SHA}-${SUFFIX}-${DISTRO}"
-
-      if [ "$CI_COMMIT_BRANCH" = "master" ]; then
-        TAG_ARGS="$TAG_ARGS --tag $CI_REGISTRY_IMAGE:latest-${SUFFIX}-${DISTRO}"
-      fi
-
-      if [ -n "$VERSION" ]; then
-        TAG_ARGS="$TAG_ARGS --tag $CI_REGISTRY_IMAGE:v${VERSION}-${SUFFIX}-${DISTRO}"
-      fi
-
-      REF_ARGS=""
-      for f in "digests/$DISTRO/$VARIANT/"*; do
-        [ -f "$f" ] || continue
-        filename=$(basename "$f")
-        platform="${filename%%@*}"
-        sha="${filename#*@}"
-        arch="${platform##*-}"
-
-        REF_ARGS="$REF_ARGS $CI_REGISTRY_IMAGE@sha256:$sha"
-
-        if [ "$CI_COMMIT_BRANCH" = "master" ]; then
-          docker buildx imagetools create \
-            --tag $CI_REGISTRY_IMAGE:latest-${SUFFIX}-${DISTRO}-${arch} \
-            $CI_REGISTRY_IMAGE@sha256:$sha
-        fi
-        if [ -n "$VERSION" ]; then
-          docker buildx imagetools create \
-            --tag $CI_REGISTRY_IMAGE:v${VERSION}-${SUFFIX}-${DISTRO}-${arch} \
-            $CI_REGISTRY_IMAGE@sha256:$sha
-        fi
-      done
-
-      docker buildx imagetools create $TAG_ARGS $REF_ARGS
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-    - if: $CI_COMMIT_TAG =~ /^v.*/
