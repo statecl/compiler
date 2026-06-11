@@ -14,7 +14,7 @@ Registry: `registry.state.cl/org/compiler` (GitLab)
 | debian | `debian:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | ubuntu | `ubuntu:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | fedora | `fedora:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| rocky | `rockylinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| rocky | `rockylinux:9` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | arch | `archlinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 
 ## Build Variants

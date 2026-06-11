@@ -1,4 +1,4 @@
-FROM rockylinux:latest AS base
+FROM rockylinux:9 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
