@@ -4,16 +4,18 @@ Multi-distribution Docker base images for building and testing C++ projects.
 Includes pre-compiled dependencies (Boost, FlatBuffers) and full toolchain per image.
 
 Repo: https://gitlab.state.cl/org/compiler
-Registry: `registry.state.cl/org/compiler` (GitLab) / `ghcr.io/statecl/environment` (GitHub)
+Registry: `registry.state.cl/org/compiler` (GitLab)
 
 ## Available Images
 
 | Distro | Base | Toolchain | Static Linking | Sanitizers |
 |--------|------|-----------|---------------|------------|
-| alpine | `alpine:3.21.3` | GCC + Clang | ✅ | ❌ |
-| debian | `debian:bookworm-20250512` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| ubuntu | `ubuntu:24.04` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| fedora | `fedora:41` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| alpine | `alpine:latest` | GCC + Clang | ✅ | ❌ |
+| debian | `debian:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| ubuntu | `ubuntu:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| fedora | `fedora:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| rocky | `rockylinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| arch | `archlinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 
 ## Build Variants
 
@@ -42,7 +44,6 @@ Pattern: `{tag}-{variant}-{distro}[-{arch}]`
 | Tag | Example | Description |
 |-----|---------|-------------|
 | `latest-{variant}-{distro}` | `latest-release-alpine` | Latest master, multi-arch |
-| `sha-{shortsha}-{variant}-{distro}` | `sha-a1b2c3d-release-debian` | Per-commit, multi-arch |
 | `v{version}-{variant}-{distro}` | `v1.2.3-debug-asan-fedora` | Versioned release, multi-arch |
 | `latest-{variant}-{distro}-{arch}` | `latest-release-ubuntu-arm64` | Single-arch |
 | `v{version}-{variant}-{distro}-{arch}` | `v1.2.3-release-alpine-amd64` | Versioned single-arch |
@@ -60,35 +61,47 @@ docker build -f debian/Dockerfile \
   --build-arg BUILD_VARIANT=Debug \
   --build-arg SANITIZER=asan \
   -t myimage:debug-asan-debian .
+
+# Fedora/Rocky (dnf-based)
+docker build -f fedora/Dockerfile \
+  --build-arg BUILD_VARIANT=Release \
+  -t myimage:release-fedora .
+
+# Arch (pacman-based)
+docker build -f arch/Dockerfile \
+  --build-arg BUILD_VARIANT=Debug \
+  --build-arg SANITIZER=tsan \
+  -t myimage:debug-tsan-arch .
 ```
 
 ## CI Matrix
 
-Each merge to `master` or `v*` tag triggers **34 parallel builds**:
+Each merge to `master` or `v*` tag triggers **54 parallel builds**:
 
 - Alpine: release, debug × amd64, arm64 = 4
-- Debian/Ubuntu/Fedora: release, debug, asan, tsan, ubsan × amd64, arm64 = 30
-- **Total: 34** per CI system (GitLab CI + GitHub Actions)
+- Debian/Ubuntu/Fedora/Rocky/Arch: release, debug, asan, tsan, ubsan × amd64, arm64 = 50
+- **Total: 54**
 
 ## Multi-Arch
 
 All images are built for `linux/amd64` and `linux/arm64` (native on arm64 runners,
 via QEMU where native unavailable). Per-platform digests are merged into
-multi-arch OCI manifests at the merge stage.
+multi-arch OCI manifests.
 
 ## Repository Structure
 
 ```
 environment/
-├── alpine/Dockerfile       # Alpine 3.21.3, musl, static
+├── alpine/Dockerfile       # Alpine Linux, musl, static
 ├── debian/Dockerfile       # Debian Bookworm, glibc
-├── ubuntu/Dockerfile       # Ubuntu 24.04, glibc
-├── fedora/Dockerfile       # Fedora 41, glibc
+├── ubuntu/Dockerfile       # Ubuntu latest, glibc
+├── fedora/Dockerfile       # Fedora latest, glibc
+├── rocky/Dockerfile        # Rocky Linux latest, glibc
+├── arch/Dockerfile         # Arch Linux latest, glibc, rolling
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   └── build-boost.sh        # Shared Boost build
 ├── Dockerfile              # Backward compat (Alpine, root)
 ├── .gitlab-ci.yml
-├── .github/workflows/publish.yml
 └── README.md
 ```
