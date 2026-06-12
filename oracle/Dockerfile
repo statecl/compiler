@@ -9,7 +9,6 @@ RUN dnf install -y dnf-plugins-core && \
         gcc-c++ \
         gcc \
     clang \
-    ccache \
     cmake \
     git \
         wget \
