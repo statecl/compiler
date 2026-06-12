@@ -37,12 +37,12 @@ variables:
       TAGS=""
 
       if [ "$CI_COMMIT_BRANCH" = "master" ]; then
-        TAGS="--tag $CI_REGISTRY_IMAGE:latest-${SUFFIX}-${DISTRO}-${ARCH}"
+        TAGS="--tag ghcr.io/statecl/compiler:latest-${SUFFIX}-${DISTRO}-${ARCH}"
       fi
 
       if echo "$CI_COMMIT_TAG" | grep -q '^v'; then
         VERSION="${CI_COMMIT_TAG#v}"
-        TAGS="$TAGS --tag $CI_REGISTRY_IMAGE:v${VERSION}-${SUFFIX}-${DISTRO}-${ARCH}"
+        TAGS="$TAGS --tag ghcr.io/statecl/compiler:v${VERSION}-${SUFFIX}-${DISTRO}-${ARCH}"
       fi
 
       docker buildx build \
