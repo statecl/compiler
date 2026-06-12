@@ -5,7 +5,6 @@ ARG SANITIZER=off
 
 RUN dnf install -y dnf-plugins-core && \
     dnf config-manager --set-enabled ol10_codeready_builder && \
-    dnf install -y oraclelinux-epel-release && \
     dnf install -y \
         gcc-c++ \
         gcc \
@@ -30,8 +29,6 @@ RUN dnf install -y dnf-plugins-core && \
         doxygen \
         graphviz \
         rsync \
-        gcovr \
-        lcov \
         autoconf \
         libnghttp2-devel \
         kernel-headers \
