@@ -59,7 +59,7 @@ jobs:
           DISTRO="${{ matrix.distro }}"
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
 
-          TAGS="${IMAGE}:sha-${GITHUB_SHA::8}-${SUFFIX}-${DISTRO}-${ARCH}"
+          TAGS=""
 
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             TAGS="${TAGS},${IMAGE}:latest-${SUFFIX}-${DISTRO}-${ARCH}"
