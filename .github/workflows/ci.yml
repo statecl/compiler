@@ -83,4 +83,4 @@ jobs:
             SANITIZER=${{ steps.args.outputs.sanitizer }}
           tags: ${{ steps.tags.outputs.tags }}
           push: true
-          provenance: false
+          provenance: true

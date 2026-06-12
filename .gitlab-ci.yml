@@ -50,7 +50,7 @@ variables:
         -f $DISTRO/Dockerfile \
         $BUILD_ARGS \
         $TAGS \
-        --provenance=false \
+        --provenance=true \
         --push \
         .
   rules:
