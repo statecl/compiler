@@ -32,6 +32,9 @@ RUN dnf install -y \
     autoconf \
     libnghttp2-devel \
     kernel-headers \
+    libasan \
+    libtsan \
+    libubsan \
     && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \

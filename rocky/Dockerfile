@@ -29,7 +29,6 @@ RUN dnf install -y epel-release && \
         doxygen \
         graphviz \
         rsync \
-        gcovr \
         lcov \
         autoconf \
         libnghttp2-devel \
