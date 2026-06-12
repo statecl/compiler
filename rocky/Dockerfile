@@ -12,7 +12,6 @@ RUN dnf install -y epel-release && \
         cmake \
         git \
         wget \
-        curl \
         ca-certificates \
         pkgconfig \
         zip \
