@@ -10,7 +10,6 @@ RUN dnf install -y \
         cmake \
         git \
         wget \
-        curl \
         ca-certificates \
         pkgconfig \
         zip \
