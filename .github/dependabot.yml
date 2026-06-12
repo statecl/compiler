@@ -1,7 +1,16 @@
 version: 2
 updates:
   - package-ecosystem: docker
-    directory: /
+    directories:
+      - /
+      - /alpine
+      - /debian
+      - /ubuntu
+      - /fedora
+      - /rocky
+      - /alma
+      - /oracle
+      - /amazon
     schedule:
       interval: weekly
       day: monday
@@ -11,37 +20,3 @@ updates:
     labels:
       - dependencies
       - docker
-
-  - &docker
-    package-ecosystem: docker
-    schedule:
-      interval: weekly
-      day: monday
-      time: "09:00"
-      timezone: America/Santiago
-    open-pull-requests-limit: 5
-    labels:
-      - dependencies
-      - docker
-    directory: /alpine
-
-  - <<: *docker
-    directory: /debian
-
-  - <<: *docker
-    directory: /ubuntu
-
-  - <<: *docker
-    directory: /fedora
-
-  - <<: *docker
-    directory: /rocky
-
-  - <<: *docker
-    directory: /alma
-
-  - <<: *docker
-    directory: /oracle
-
-  - <<: *docker
-    directory: /amazon
