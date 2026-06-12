@@ -1,4 +1,4 @@
-FROM almalinux:latest AS base
+FROM almalinux:10.2 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off

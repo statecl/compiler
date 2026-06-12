@@ -1,4 +1,4 @@
-FROM fedora:latest AS base
+FROM fedora:45 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off

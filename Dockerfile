@@ -1,4 +1,4 @@
-FROM alpine:latest AS base
+FROM alpine:3.24.0 AS base
 
 ARG BUILD_VARIANT=Release
 

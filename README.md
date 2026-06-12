@@ -10,14 +10,14 @@ Registry: `registry.state.cl/org/compiler` (GitLab)
 
 | Distro | Base | Toolchain | Static Linking | Sanitizers |
 |--------|------|-----------|---------------|------------|
-| alpine | `alpine:latest` | GCC + Clang | ✅ | ❌ |
-| debian | `debian:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| ubuntu | `ubuntu:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| fedora | `fedora:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| rocky | `rockylinux:9` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| alma | `almalinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| alpine | `alpine:3.24.0` | GCC + Clang | ✅ | ❌ |
+| debian | `debian:bookworm-20260610` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| ubuntu | `ubuntu:noble-20260509.1` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| fedora | `fedora:45` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| rocky | `rockylinux:9.3` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| alma | `almalinux:10.2` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | oracle | `oraclelinux:10` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| amazon | `amazonlinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| amazon | `amazonlinux:2023.11.20260526.0` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 
 ## Build Variants
 
@@ -99,14 +99,14 @@ multi-arch OCI manifests.
 
 ```
 environment/
-├── alpine/Dockerfile       # Alpine Linux, musl, static
-├── debian/Dockerfile       # Debian Bookworm, glibc
-├── ubuntu/Dockerfile       # Ubuntu latest, glibc
-├── fedora/Dockerfile       # Fedora latest, glibc
-├── rocky/Dockerfile        # Rocky Linux 9, glibc
-├── alma/Dockerfile         # AlmaLinux latest, glibc
+├── alpine/Dockerfile       # Alpine 3.24.0, musl, static
+├── debian/Dockerfile       # Debian Bookworm 20260610, glibc
+├── ubuntu/Dockerfile       # Ubuntu Noble 24.04, glibc
+├── fedora/Dockerfile       # Fedora 45, glibc
+├── rocky/Dockerfile        # Rocky Linux 9.3, glibc
+├── alma/Dockerfile         # AlmaLinux 10.2, glibc
 ├── oracle/Dockerfile      # Oracle Linux 10, glibc
-├── amazon/Dockerfile      # Amazon Linux latest, glibc
+├── amazon/Dockerfile      # Amazon Linux 2023.11, glibc
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   └── build-boost.sh        # Shared Boost build

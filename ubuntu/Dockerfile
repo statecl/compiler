@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS base
+FROM ubuntu:noble-20260509.1 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
