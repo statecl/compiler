@@ -7,6 +7,7 @@ RUN apk update && apk add --no-cache \
     alpine-sdk \
     clang \
     cmake \
+    ccache \
     git \
     wget \
     curl \

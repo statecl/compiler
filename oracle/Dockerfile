@@ -8,9 +8,10 @@ RUN dnf install -y dnf-plugins-core && \
     dnf install -y \
         gcc-c++ \
         gcc \
-        clang \
-        cmake \
-        git \
+    clang \
+    ccache \
+    cmake \
+    git \
         wget \
         curl \
         ca-certificates \

@@ -8,9 +8,10 @@ RUN dnf install -y epel-release && \
     dnf install -y \
         gcc-c++ \
         gcc \
-        clang \
-        cmake \
-        git \
+    clang \
+    ccache \
+    cmake \
+    git \
         wget \
         ca-certificates \
         pkgconfig \

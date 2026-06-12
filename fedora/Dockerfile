@@ -7,6 +7,7 @@ RUN dnf install -y \
     gcc-c++ \
     gcc \
     clang \
+    ccache \
     cmake \
     git \
     wget \
