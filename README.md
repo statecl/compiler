@@ -15,7 +15,9 @@ Registry: `registry.state.cl/org/compiler` (GitLab)
 | ubuntu | `ubuntu:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | fedora | `fedora:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 | rocky | `rockylinux:9` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
-| arch | `archlinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| alma | `almalinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| oracle | `oraclelinux:10` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
+| amazon | `amazonlinux:latest` | GCC + Clang | ❌ | ✅ ASAN, TSAN, UBSAN |
 
 ## Build Variants
 
@@ -62,25 +64,30 @@ docker build -f debian/Dockerfile \
   --build-arg SANITIZER=asan \
   -t myimage:debug-asan-debian .
 
-# Fedora/Rocky (dnf-based)
+# Fedora/Rocky/Alma (dnf-based)
 docker build -f fedora/Dockerfile \
   --build-arg BUILD_VARIANT=Release \
   -t myimage:release-fedora .
 
-# Arch (pacman-based)
-docker build -f arch/Dockerfile \
+# Oracle Linux
+docker build -f oracle/Dockerfile \
+  --build-arg BUILD_VARIANT=Release \
+  -t myimage:release-oracle .
+
+# Amazon Linux
+docker build -f amazon/Dockerfile \
   --build-arg BUILD_VARIANT=Debug \
   --build-arg SANITIZER=tsan \
-  -t myimage:debug-tsan-arch .
+  -t myimage:debug-tsan-amazon .
 ```
 
 ## CI Matrix
 
-Each merge to `master` or `v*` tag triggers **54 parallel builds**:
+Each merge to `master` or `v*` tag triggers **74 parallel builds**:
 
 - Alpine: release, debug × amd64, arm64 = 4
-- Debian/Ubuntu/Fedora/Rocky/Arch: release, debug, asan, tsan, ubsan × amd64, arm64 = 50
-- **Total: 54**
+- Debian/Ubuntu/Fedora/Rocky/Alma/Oracle/Amazon: release, debug, asan, tsan, ubsan × amd64, arm64 = 70
+- **Total: 74**
 
 ## Multi-Arch
 
@@ -96,8 +103,10 @@ environment/
 ├── debian/Dockerfile       # Debian Bookworm, glibc
 ├── ubuntu/Dockerfile       # Ubuntu latest, glibc
 ├── fedora/Dockerfile       # Fedora latest, glibc
-├── rocky/Dockerfile        # Rocky Linux latest, glibc
-├── arch/Dockerfile         # Arch Linux latest, glibc, rolling
+├── rocky/Dockerfile        # Rocky Linux 9, glibc
+├── alma/Dockerfile         # AlmaLinux latest, glibc
+├── oracle/Dockerfile      # Oracle Linux 10, glibc
+├── amazon/Dockerfile      # Amazon Linux latest, glibc
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   └── build-boost.sh        # Shared Boost build

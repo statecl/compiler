@@ -1,36 +1,42 @@
-FROM archlinux:latest AS base
+FROM amazonlinux:latest AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
 
-RUN pacman -Syu --noconfirm && \
-    pacman -S --noconfirm \
-        base-devel \
+RUN dnf install -y \
+        gcc-c++ \
+        gcc \
         clang \
         cmake \
         git \
         wget \
         curl \
         ca-certificates \
-        pkg-config \
+        pkgconfig \
         zip \
         unzip \
         tzdata \
-        openssl \
-        zlib \
-        protobuf \
-        python \
+        libtool \
+        automake \
+        m4 \
+        openssl-devel \
+        zlib-devel \
+        libcurl-devel \
+        protobuf-devel \
+        python3 \
         doxygen \
         graphviz \
         rsync \
-        gcovr \
-        lcov \
-        libnghttp2 \
-        linux-headers \
-    && pacman -Scc --noconfirm
+        autoconf \
+        libnghttp2-devel \
+        kernel-headers \
+        libasan \
+        libtsan \
+        libubsan \
+    && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
-    pacman -S --noconfirm gdb && pacman -Scc --noconfirm; \
+    dnf install -y gdb && dnf clean all; \
     fi
 
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
