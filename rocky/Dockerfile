@@ -6,8 +6,13 @@ ARG SANITIZER=off
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
+        gcc \
+        gcc-c++ \
         gcc-toolset-12-gcc \
         gcc-toolset-12-gcc-c++ \
+        gcc-toolset-12-libasan-devel \
+        gcc-toolset-12-libubsan-devel \
+        gcc-toolset-12-libtsan-devel \
     clang \
     ccache \
     cmake \
