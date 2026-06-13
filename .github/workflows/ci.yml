@@ -29,6 +29,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      PLATFORM: ${{ matrix.runner == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
+      ARCH: ${{ matrix.runner == 'ubuntu-24.04-arm' && 'arm64' || 'amd64' }}
     steps:
       - uses: actions/checkout@v6.0.3
 
@@ -51,36 +54,56 @@ jobs:
             ubsan)   echo "build_variant=Debug"   >> "$GITHUB_OUTPUT"; echo "sanitizer=ubsan"    >> "$GITHUB_OUTPUT"; echo "suffix=debug-ubsan"  >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - name: Generate tags
-        id: tags
+      - name: Build and push
         run: |
-          ARCH="${{ matrix.runner == 'ubuntu-24.04-arm' && 'arm64' || 'amd64' }}"
-          SUFFIX="${{ steps.args.outputs.suffix }}"
           DISTRO="${{ matrix.distro }}"
+          SUFFIX="${{ steps.args.outputs.suffix }}"
+          BUILD_VARIANT="${{ steps.args.outputs.build_variant }}"
+          SANITIZER="${{ steps.args.outputs.sanitizer }}"
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
 
-          TAGS=""
-
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            TAGS="${TAGS},${IMAGE}:latest-${SUFFIX}-${DISTRO}-${ARCH}"
+          BUILD_ARGS="--build-arg BUILD_VARIANT=$BUILD_VARIANT"
+          if [ "$SANITIZER" != "off" ]; then
+            BUILD_ARGS="$BUILD_ARGS --build-arg SANITIZER=$SANITIZER"
           fi
 
+          TAGS=""
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            TAGS="$TAGS --tag ${IMAGE}:latest-${SUFFIX}-${DISTRO}-${ARCH}"
+          fi
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
-            TAGS="${TAGS},${IMAGE}:v${VERSION}-${SUFFIX}-${DISTRO}-${ARCH}"
+            TAGS="$TAGS --tag ${IMAGE}:v${VERSION}-${SUFFIX}-${DISTRO}-${ARCH}"
           fi
 
-          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          docker buildx build \
+            --platform ${{ env.PLATFORM }} \
+            -f $DISTRO/Dockerfile \
+            $BUILD_ARGS \
+            --load \
+            -t probe:${GITHUB_RUN_ID} \
+            .
 
-      - name: Build and push
-        uses: docker/build-push-action@v7.2.0
-        with:
-          context: .
-          file: ${{ matrix.distro }}/Dockerfile
-          platforms: ${{ matrix.runner == 'ubuntu-24.04-arm' && 'linux/arm64' || 'linux/amd64' }}
-          build-args: |
-            BUILD_VARIANT=${{ steps.args.outputs.build_variant }}
-            SANITIZER=${{ steps.args.outputs.sanitizer }}
-          tags: ${{ steps.tags.outputs.tags }}
-          push: true
-          provenance: true
+          LABELS=$(docker run --rm probe:${GITHUB_RUN_ID} python3 -c "
+import json
+with open('/etc/image-versions.json') as f:
+    d = json.load(f)
+def walk(p, o):
+    for k, v in o.items():
+        kk = f'{p}.{k}' if p else k
+        if isinstance(v, dict):
+            walk(kk, v)
+        else:
+            print(f'--label io.statecl.{kk.replace(chr(46), chr(45))}={v}')
+walk('', d)
+")
+
+          eval docker buildx build \
+            --platform ${{ env.PLATFORM }} \
+            -f $DISTRO/Dockerfile \
+            $BUILD_ARGS \
+            $TAGS \
+            $LABELS \
+            --provenance=true \
+            --push \
+            .

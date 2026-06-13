@@ -6,8 +6,8 @@ ARG SANITIZER=off
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-        gcc-c++ \
-        gcc \
+        gcc-toolset-12-gcc \
+        gcc-toolset-12-gcc-c++ \
     clang \
     ccache \
     cmake \
@@ -37,6 +37,9 @@ RUN dnf install -y epel-release && \
         libtsan \
         libubsan \
     && dnf clean all
+
+ENV CC=/opt/rh/gcc-toolset-12/root/usr/bin/gcc
+ENV CXX=/opt/rh/gcc-toolset-12/root/usr/bin/g++
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
     dnf install -y gdb && dnf clean all; \
