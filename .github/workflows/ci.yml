@@ -84,19 +84,7 @@ jobs:
             -t probe:${GITHUB_RUN_ID} \
             .
 
-          LABELS=$(docker run --rm probe:${GITHUB_RUN_ID} python3 -c "
-import json
-with open('/etc/image-versions.json') as f:
-    d = json.load(f)
-def walk(p, o):
-    for k, v in o.items():
-        kk = f'{p}.{k}' if p else k
-        if isinstance(v, dict):
-            walk(kk, v)
-        else:
-            print(f'--label io.statecl.{kk.replace(chr(46), chr(45))}={v}')
-walk('', d)
-")
+          LABELS=$(docker run --rm probe:${GITHUB_RUN_ID} python3 -c "import json;d=json.load(open('/etc/image-versions.json'));w=lambda p,o:[print(f'--label io.statecl.{(p+chr(46)+k if p else k).replace(chr(46),chr(45))}={v}') if not isinstance(v,dict) else w(p+chr(46)+k if p else k,v) for k,v in o.items()];w('',d)")
 
           eval docker buildx build \
             --platform ${{ env.PLATFORM }} \
