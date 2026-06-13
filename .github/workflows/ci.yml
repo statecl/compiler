@@ -80,18 +80,7 @@ jobs:
             --platform ${{ env.PLATFORM }} \
             -f $DISTRO/Dockerfile \
             $BUILD_ARGS \
-            --load \
-            -t probe:${GITHUB_RUN_ID} \
-            .
-
-          LABELS=$(docker run --rm probe:${GITHUB_RUN_ID} python3 -c "import json;d=json.load(open('/etc/image-versions.json'));w=lambda p,o:[print(f'--label io.statecl.{(p+chr(46)+k if p else k).replace(chr(46),chr(45))}={v}') if not isinstance(v,dict) else w(p+chr(46)+k if p else k,v) for k,v in o.items()];w('',d)")
-
-          eval docker buildx build \
-            --platform ${{ env.PLATFORM }} \
-            -f $DISTRO/Dockerfile \
-            $BUILD_ARGS \
             $TAGS \
-            $LABELS \
             --provenance=true \
             --push \
             .
