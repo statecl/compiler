@@ -4,8 +4,8 @@ ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
 
 RUN dnf install -y \
-        gcc-c++ \
-        gcc \
+        gcc14 \
+        gcc14-c++ \
     clang \
     cmake \
     git \
@@ -39,6 +39,9 @@ RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
     fi
 
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
+
+ENV CC=/usr/bin/gcc14-gcc
+ENV CXX=/usr/bin/gcc14-g++
 
 COPY scripts/build-flatbuffers.sh /tmp/build-flatbuffers.sh
 RUN FLATBUFFERS_VERSION=v23.5.26 \
