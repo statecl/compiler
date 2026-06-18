@@ -64,4 +64,16 @@ RUN BOOST_VERSION=1.91.0 \
     SANITIZER=$SANITIZER \
     /tmp/build-boost.sh
 
+COPY scripts/build-fmt.sh /tmp/build-fmt.sh
+RUN FMT_VERSION=11.0.2 \
+    BUILD_VARIANT=$BUILD_VARIANT \
+    SANITIZER=$SANITIZER \
+    /tmp/build-fmt.sh
+
+COPY scripts/build-googletest.sh /tmp/build-googletest.sh
+RUN GTEST_VERSION=03597a01ee50ed33e9dfd640b249b4be3799d395 \
+    BUILD_VARIANT=$BUILD_VARIANT \
+    SANITIZER=$SANITIZER \
+    /tmp/build-googletest.sh
+
 WORKDIR /src

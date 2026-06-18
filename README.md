@@ -1,7 +1,7 @@
 # Environment Base Images
 
 Multi-distribution Docker base images for building and testing C++ projects.
-Includes pre-compiled dependencies (Boost, FlatBuffers) and full toolchain per image.
+Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest) and full toolchain per image.
 
 **Registry:** `ghcr.io/statecl/compiler`
 
@@ -10,7 +10,8 @@ Includes pre-compiled dependencies (Boost, FlatBuffers) and full toolchain per i
 ## Available Images
 
 All images include GCC + Clang, CMake, Boost 1.91.0, FlatBuffers v23.5.26,
-ccache (except Oracle Linux, Amazon Linux), and full documentation tooling.
+fmt 11.0.2, GoogleTest (03597a01), ccache (except Oracle Linux, Amazon Linux),
+and full documentation tooling.
 
 | Distro | Base Image | libc | Static | Sanitizers |
 |--------|-----------|------|--------|------------|
@@ -38,7 +39,7 @@ ccache (except Oracle Linux, Amazon Linux), and full documentation tooling.
 | `debug-tsan` | `-O1 -g -fsanitize=thread` | ❌ | ✅ |
 | `debug-ubsan` | `-O1 -g -fsanitize=undefined` | ❌ | ✅ |
 
-Sanitizer variants instrument all dependencies (Boost + FlatBuffers + runtime).
+Sanitizer variants instrument all dependencies (Boost + FlatBuffers + fmt + GoogleTest + runtime).
 
 ---
 
@@ -122,6 +123,8 @@ Total: 74 parallel builds
 
 Same matrix via `.github/workflows/ci.yml`, publishes to `ghcr.io`.
 
+Runs on `master` push, `v*` tags, daily schedule (`06:00 UTC`), and manual dispatch.
+
 ### Dependabot
 
 `.github/dependabot.yml` checks for new base image tags every Monday.
@@ -152,7 +155,9 @@ environment/
 ├── amazon/Dockerfile       # Amazon Linux 2023.11, glibc
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
-│   └── build-boost.sh        # Shared Boost build
+│   ├── build-boost.sh        # Shared Boost build
+│   ├── build-fmt.sh          # Shared fmtlib build
+│   └── build-googletest.sh   # Shared GoogleTest build
 ├── .github/
 │   ├── dependabot.yml        # Base image version checks
 │   └── workflows/ci.yml      # GitHub Actions CI
