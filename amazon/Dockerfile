@@ -30,8 +30,10 @@ RUN dnf install -y \
         libnghttp2-devel \
         kernel-headers \
         libasan \
+        libasan8 \
         libtsan \
         libubsan \
+        gcc14-libstdc++-static \
     && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \

@@ -33,10 +33,11 @@ RUN dnf install -y \
     autoconf \
     libnghttp2-devel \
     kernel-headers \
-    libasan \
-    libtsan \
-    libubsan \
-    && dnf clean all
+        libasan \
+        libtsan \
+        libubsan \
+        libstdc++-static \
+        && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
     dnf install -y gdb && dnf clean all; \

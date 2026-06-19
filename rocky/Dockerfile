@@ -41,10 +41,13 @@ RUN dnf install -y epel-release && \
         libasan \
         libtsan \
         libubsan \
+        libstdc++-static \
     && dnf clean all
 
 ENV CC=/opt/rh/gcc-toolset-12/root/usr/bin/gcc
 ENV CXX=/opt/rh/gcc-toolset-12/root/usr/bin/g++
+ENV PATH=/opt/rh/gcc-toolset-12/root/usr/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/rh/gcc-toolset-12/root/usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
     dnf install -y gdb && dnf clean all; \

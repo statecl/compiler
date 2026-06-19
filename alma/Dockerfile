@@ -37,6 +37,7 @@ RUN dnf install -y epel-release && \
         libasan \
         libtsan \
         libubsan \
+        libstdc++-static \
     && dnf clean all
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \

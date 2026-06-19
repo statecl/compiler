@@ -26,7 +26,7 @@ if [ "$SANITIZER" != "off" ]; then
         $BOOST_LIBS \
         variant=release \
         debug-symbols=on \
-        link=shared runtime-link=shared \
+        link=static runtime-link=static \
         cxxflags="$SANITIZER_FLAGS -g -O1" \
         linkflags="$SANITIZER_FLAGS" \
         -j2
