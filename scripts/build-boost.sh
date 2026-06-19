@@ -5,6 +5,15 @@ BOOST_VERSION="${BOOST_VERSION:-1.91.0}"
 BUILD_VARIANT="${BUILD_VARIANT:-Release}"
 SANITIZER="${SANITIZER:-off}"
 
+# Boost.Build (bootstrap.sh / b2) ignora CC/CXX.  Ponemos el directorio
+# del compilador al inicio del PATH para que encuentre g++ correcto.
+if [ -n "${CXX:-}" ]; then
+    CXX_DIR="$(dirname "$CXX" 2>/dev/null)"
+    if [ "$CXX_DIR" != "." ] && [ -d "$CXX_DIR" ] && [[ ":$PATH:" != *":$CXX_DIR:"* ]]; then
+        export PATH="$CXX_DIR:$PATH"
+    fi
+fi
+
 BOOST_LIBS="--with-json --with-program_options --with-charconv"
 BOOST_VERSION_DASH="${BOOST_VERSION//./_}"
 BOOST_URL="https://archives.boost.io/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_DASH.tar.gz"
@@ -26,7 +35,7 @@ if [ "$SANITIZER" != "off" ]; then
         $BOOST_LIBS \
         variant=release \
         debug-symbols=on \
-        link=static runtime-link=static \
+        link=shared runtime-link=shared \
         cxxflags="$SANITIZER_FLAGS -g -O1" \
         linkflags="$SANITIZER_FLAGS" \
         -j2

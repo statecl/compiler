@@ -42,6 +42,8 @@ RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
 
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 
+RUN ln -sf /usr/bin/gcc14-gcc /usr/local/bin/gcc && \
+    ln -sf /usr/bin/gcc14-g++ /usr/local/bin/g++
 ENV CC=/usr/bin/gcc14-gcc
 ENV CXX=/usr/bin/gcc14-g++
 
