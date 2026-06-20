@@ -158,7 +158,7 @@ environment/
 │   ├── build-boost.sh        # Shared Boost build
 │   ├── build-fmt.sh          # Shared fmtlib build
 │   ├── build-googletest.sh   # Shared GoogleTest build
-│   └── build-re2.sh          # Shared RE2 build
+│   └── build-re2.sh          # Shared RE2 build (builds Abseil from source)
 ├── .github/
 │   ├── dependabot.yml        # Base image version checks
 │   └── workflows/ci.yml      # GitHub Actions CI
