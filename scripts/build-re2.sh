@@ -41,6 +41,7 @@ cmake -S . -B build \
     -DABSL_USE_GOOGLETEST_HEAD=OFF \
     "${SANITIZER_CMAKE[@]}"
 cmake --build build --target install --parallel 2
+cd /
 rm -rf /tmp/abseil
 
 # Build RE2
@@ -56,4 +57,5 @@ CMAKE_ARGS=(
 
 cmake -S . -B build "${CMAKE_ARGS[@]}"
 cmake --build build --target install --parallel 2
+cd /
 rm -rf /tmp/re2
