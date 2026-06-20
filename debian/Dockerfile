@@ -73,6 +73,7 @@ COPY scripts/build-re2.sh /tmp/build-re2.sh
 RUN RE2_VERSION=2024-07-02 \
     BUILD_VARIANT=$BUILD_VARIANT \
     SANITIZER=$SANITIZER \
-    /tmp/build-re2.sh
+    /tmp/build-re2.sh && \
+    ldconfig
 
 WORKDIR /src

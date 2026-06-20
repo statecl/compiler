@@ -40,6 +40,7 @@ cmake -S . -B build \
 cmake --build build --target install --parallel 2
 cd /
 rm -rf /tmp/abseil
+ldconfig 2>/dev/null || true  # Update linker cache for Abseil shared libs
 
 # Build RE2 (without sanitizer flags to avoid
 # constexpr issues in Abseil with GCC + UBSan (hash_policy_traits.h))
