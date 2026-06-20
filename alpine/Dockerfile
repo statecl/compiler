@@ -75,4 +75,9 @@ RUN GTEST_VERSION=03597a01ee50ed33e9dfd640b249b4be3799d395 \
     BUILD_VARIANT=$BUILD_VARIANT \
     /tmp/build-googletest.sh
 
+COPY scripts/build-re2.sh /tmp/build-re2.sh
+RUN RE2_VERSION=2024-07-02 \
+    BUILD_VARIANT=$BUILD_VARIANT \
+    /tmp/build-re2.sh
+
 WORKDIR /src

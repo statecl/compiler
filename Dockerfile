@@ -54,6 +54,18 @@ RUN if [ "$BUILD_VARIANT" = "Debug" ]; then \
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 
+# Build RE2
+RUN git clone https://github.com/google/re2.git /tmp/re2 && \
+    cd /tmp/re2 && \
+    git checkout tags/2024-07-02 && \
+    if [ "$BUILD_VARIANT" = "Debug" ]; then SHARED=ON; else SHARED=OFF; fi && \
+    cmake -S . -B build \
+        -DCMAKE_BUILD_TYPE="$BUILD_VARIANT" \
+        -DRE2_BUILD_TESTING=OFF \
+        -DBUILD_SHARED_LIBS="$SHARED" && \
+    cmake --build build --target install --parallel 2 && \
+    rm -rf /tmp/re2
+
 # Build FlatBuffers (v23.5.26)
 RUN git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers && \
     cd /tmp/flatbuffers && \
