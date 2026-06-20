@@ -31,20 +31,26 @@ if [ "$SANITIZER" != "off" ]; then
     )
 fi
 
-# Build Abseil (RE2 dependency)
+# Build Abseil (RE2 dependency) - without sanitizer flags to avoid
+# constexpr issues in Abseil with GCC + UBSan (hash_policy_traits.h)
+ABSEIL_BUILD_TYPE="$CMAKE_BUILD_TYPE"
+ABSEIL_SHARED="$SHARED"
+if [ "$SANITIZER" != "off" ]; then
+    ABSEIL_BUILD_TYPE="Debug"
+    ABSEIL_SHARED=ON
+fi
 git clone --depth 1 --branch "$ABSEIL_VERSION" https://github.com/abseil/abseil-cpp.git /tmp/abseil
 cd /tmp/abseil
 cmake -S . -B build \
-    -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
-    -DBUILD_SHARED_LIBS="$SHARED" \
+    -DCMAKE_BUILD_TYPE="$ABSEIL_BUILD_TYPE" \
+    -DBUILD_SHARED_LIBS="$ABSEIL_SHARED" \
     -DABSL_BUILD_TESTING=OFF \
-    -DABSL_USE_GOOGLETEST_HEAD=OFF \
-    "${SANITIZER_CMAKE[@]}"
+    -DABSL_USE_GOOGLETEST_HEAD=OFF
 cmake --build build --target install --parallel 2
 cd /
 rm -rf /tmp/abseil
 
-# Build RE2
+# Build RE2 (with sanitizer flags if requested)
 git clone --depth 1 --branch "$RE2_VERSION" https://github.com/google/re2.git /tmp/re2
 cd /tmp/re2
 
