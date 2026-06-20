@@ -10,7 +10,7 @@ Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest, RE2) an
 ## Available Images
 
 All images include GCC + Clang, CMake, Boost 1.91.0, FlatBuffers v23.5.26,
-fmt 11.0.2, GoogleTest (03597a01), RE2 2024-07-02, ccache (except Oracle Linux, Amazon Linux),
+fmt 11.0.2, GoogleTest (03597a01), RE2 2025-11-05, ccache (except Oracle Linux, Amazon Linux),
 and full documentation tooling.
 
 | Distro | Base Image | libc | Static | Sanitizers |

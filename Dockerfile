@@ -57,7 +57,7 @@ RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 # Build RE2
 RUN git clone https://github.com/google/re2.git /tmp/re2 && \
     cd /tmp/re2 && \
-    git checkout tags/2024-07-02 && \
+    git checkout tags/2025-11-05 && \
     if [ "$BUILD_VARIANT" = "Debug" ]; then SHARED=ON; else SHARED=OFF; fi && \
     cmake -S . -B build \
         -DCMAKE_BUILD_TYPE="$BUILD_VARIANT" \
