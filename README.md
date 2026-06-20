@@ -1,7 +1,7 @@
 # Environment Base Images
 
 Multi-distribution Docker base images for building and testing C++ projects.
-Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest) and full toolchain per image.
+Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest, RE2) and full toolchain per image.
 
 **Registry:** `ghcr.io/statecl/compiler`
 
@@ -10,7 +10,7 @@ Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest) and ful
 ## Available Images
 
 All images include GCC + Clang, CMake, Boost 1.91.0, FlatBuffers v23.5.26,
-fmt 11.0.2, GoogleTest (03597a01), ccache (except Oracle Linux, Amazon Linux),
+fmt 11.0.2, GoogleTest (03597a01), RE2 2024-07-02, ccache (except Oracle Linux, Amazon Linux),
 and full documentation tooling.
 
 | Distro | Base Image | libc | Static | Sanitizers |
@@ -39,7 +39,7 @@ and full documentation tooling.
 | `debug-tsan` | `-O1 -g -fsanitize=thread` | ❌ | ✅ |
 | `debug-ubsan` | `-O1 -g -fsanitize=undefined` | ❌ | ✅ |
 
-Sanitizer variants instrument all dependencies (Boost + FlatBuffers + fmt + GoogleTest + runtime).
+Sanitizer variants instrument all dependencies (Boost + FlatBuffers + fmt + GoogleTest + RE2 + runtime).
 
 ---
 
@@ -157,7 +157,8 @@ environment/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   ├── build-boost.sh        # Shared Boost build
 │   ├── build-fmt.sh          # Shared fmtlib build
-│   └── build-googletest.sh   # Shared GoogleTest build
+│   ├── build-googletest.sh   # Shared GoogleTest build
+│   └── build-re2.sh          # Shared RE2 build
 ├── .github/
 │   ├── dependabot.yml        # Base image version checks
 │   └── workflows/ci.yml      # GitHub Actions CI
