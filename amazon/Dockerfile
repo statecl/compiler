@@ -47,6 +47,9 @@ RUN ln -sf /usr/bin/gcc14-gcc /usr/local/bin/gcc && \
 ENV CC=/usr/bin/gcc14-gcc
 ENV CXX=/usr/bin/gcc14-g++
 
+# Make GCC runtime libraries (libtsan, libasan, libubsan) discoverable
+RUN gcc -print-search-dirs | sed -n 's/^libraries: =//p' | tr ':' '\n' > /etc/ld.so.conf.d/gcc.conf && ldconfig
+
 COPY scripts/build-flatbuffers.sh /tmp/build-flatbuffers.sh
 RUN FLATBUFFERS_VERSION=v23.5.26 \
     BUILD_VARIANT=$BUILD_VARIANT \

@@ -45,6 +45,9 @@ RUN if [ "$BUILD_VARIANT" = "Debug" ] || [ "$SANITIZER" != "off" ]; then \
 
 RUN ln -sf /usr/share/zoneinfo/UTC /etc/localtime && echo "UTC" > /etc/timezone
 
+# Make GCC runtime libraries (libtsan, libasan, libubsan) discoverable
+RUN gcc -print-search-dirs | sed -n 's/^libraries: =//p' | tr ':' '\n' > /etc/ld.so.conf.d/gcc.conf && ldconfig
+
 COPY scripts/build-flatbuffers.sh /tmp/build-flatbuffers.sh
 RUN FLATBUFFERS_VERSION=v23.5.26 \
     BUILD_VARIANT=$BUILD_VARIANT \
