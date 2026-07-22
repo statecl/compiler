@@ -20,7 +20,8 @@ BOOST_URL="https://archives.boost.io/beta/1.92.0.beta1/source/boost_$BOOST_VERSI
 
 wget -q "$BOOST_URL"
 tar -xf "boost_$BOOST_VERSION_DASH.tar.gz"
-cd "boost_$BOOST_VERSION_DASH"
+BOOST_DIR=$(tar -tzf "boost_$BOOST_VERSION_DASH.tar.gz" | head -1 | cut -d/ -f1)
+cd "$BOOST_DIR"
 sh bootstrap.sh
 
 # shellcheck disable=SC2086
@@ -52,4 +53,4 @@ else
 fi
 
 cd ..
-rm -rf "boost_$BOOST_VERSION_DASH" "boost_$BOOST_VERSION_DASH.tar.gz"
+rm -rf "$BOOST_DIR" "boost_$BOOST_VERSION_DASH.tar.gz"

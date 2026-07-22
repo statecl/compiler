@@ -83,7 +83,8 @@ ARG BOOST_VERSION="1.92.0_b1"
 RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
     wget https://archives.boost.io/beta/1.92.0.beta1/source/boost_$BOOST_VERSION_DASH.tar.gz && \
     tar -xf boost_$BOOST_VERSION_DASH.tar.gz && \
-    cd boost_$BOOST_VERSION_DASH && \
+    BOOST_DIR=$(tar -tzf boost_$BOOST_VERSION_DASH.tar.gz | head -1 | cut -d/ -f1) && \
+    cd "$BOOST_DIR" && \
     sh bootstrap.sh && \
     if [ "$BUILD_VARIANT" = "Debug" ]; then \
         ./b2 install \
@@ -97,6 +98,6 @@ RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
             -j2; \
     fi && \
     cd .. && \
-    rm -rf boost_$BOOST_VERSION_DASH boost_$BOOST_VERSION_DASH.tar.gz
+    rm -rf "$BOOST_DIR" boost_$BOOST_VERSION_DASH.tar.gz
 
 WORKDIR /src
