@@ -10,19 +10,19 @@ Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest, RE2) an
 ## Available Images
 
 All images include GCC + Clang, CMake, Boost 1.92.0, FlatBuffers v23.5.26,
-fmt 11.0.2, GoogleTest (03597a01), RE2 2025-11-05, ccache (except Oracle Linux, Amazon Linux),
+fmt 11.0.2, GoogleTest (03597a01), RE2 2024-07-02, ccache (except Oracle Linux, Amazon Linux),
 and full documentation tooling.
 
 | Distro | Base Image | libc | Static | Sanitizers |
 |--------|-----------|------|--------|------------|
-| alpine | `alpine:3.24.0` | musl | ✅ | ❌ |
-| debian | `debian:bookworm-20260610` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| ubuntu | `ubuntu:noble-20260509.1` | glibc | ❌ | ASAN, TSAN, UBSAN |
+| alpine | `alpine:3.24.1` | musl | ✅ | ❌ |
+| debian | `debian:bookworm-20260803` | glibc | ❌ | ASAN, TSAN, UBSAN |
+| ubuntu | `ubuntu:noble-20260730.1` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | fedora | `fedora:45` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | rocky | `rockylinux:9.3` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | alma | `almalinux:10.2` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | oracle | `oraclelinux:10` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| amazon | `amazonlinux:2023.11.20260526.0` | glibc | ❌ | ASAN, TSAN, UBSAN |
+| amazon | `amazonlinux:2023.12.20260727.0` | glibc | ❌ | ASAN, TSAN, UBSAN |
 
 > Alpine is the only image with static linking and musl libc.
 > All glibc-based images support sanitizers; Alpine does not.
@@ -145,14 +145,14 @@ All images are built for `linux/amd64` and `linux/arm64`:
 
 ```
 environment/
-├── alpine/Dockerfile       # Alpine 3.24.0, musl, static
-├── debian/Dockerfile       # Debian Bookworm 20260610, glibc
+├── alpine/Dockerfile       # Alpine 3.24.1, musl, static
+├── debian/Dockerfile       # Debian Bookworm 20260803, glibc
 ├── ubuntu/Dockerfile       # Ubuntu Noble 24.04, glibc
 ├── fedora/Dockerfile       # Fedora 45, glibc
 ├── rocky/Dockerfile        # Rocky Linux 9.3, glibc
 ├── alma/Dockerfile         # AlmaLinux 10.2, glibc
 ├── oracle/Dockerfile       # Oracle Linux 10, glibc
-├── amazon/Dockerfile       # Amazon Linux 2023.11, glibc
+├── amazon/Dockerfile       # Amazon Linux 2023.12, glibc
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   ├── build-boost.sh        # Shared Boost build
@@ -169,10 +169,10 @@ environment/
 
 ## Quick Reference
 
-| Feature | Alpine | Debian/Ubuntu | Fedora/Rocky/Alma | Oracle | Amazon |
-|---------|--------|---------------|-------------------|--------|--------|
-| Package manager | `apk` | `apt` | `dnf` | `dnf` | `dnf` |
-| ccache | ✅ | ✅ | ✅ | ❌ | ❌ |
-| gcovr / lcov | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Static linking | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Sanitizers | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Feature | Alpine | Debian/Ubuntu | Fedora/Alma | Rocky | Oracle | Amazon |
+|---------|--------|---------------|-------------|-------|--------|--------|
+| Package manager | `apk` | `apt` | `dnf` | `dnf` | `dnf` | `dnf` |
+| ccache | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| gcovr / lcov | ✅ | ✅ | ✅ | lcov only | ❌ | ❌ |
+| Static linking | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Sanitizers | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
