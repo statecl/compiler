@@ -16,10 +16,10 @@ fi
 
 BOOST_LIBS="--with-json --with-program_options --with-charconv"
 BOOST_VERSION_DASH="${BOOST_VERSION//./_}"
-BOOST_URL="https://archives.boost.io/release/1.92.0/source/boost_$BOOST_VERSION_DASH.tar.bz2"
+BOOST_URL="https://archives.boost.io/release/1.92.0/source/boost_$BOOST_VERSION_DASH.tar.gz"
 
 wget -q "$BOOST_URL"
-tar -xf "boost_$BOOST_VERSION_DASH.tar.bz2"
+tar -xf "boost_$BOOST_VERSION_DASH.tar.gz"
 if [ -d "boost_$BOOST_VERSION_DASH" ]; then
     BOOST_DIR="boost_$BOOST_VERSION_DASH"
 else
@@ -57,4 +57,4 @@ else
 fi
 
 cd ..
-rm -rf "$BOOST_DIR" "boost_$BOOST_VERSION_DASH.tar.bz2"
+rm -rf "$BOOST_DIR" "boost_$BOOST_VERSION_DASH.tar.gz"

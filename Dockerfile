@@ -81,8 +81,8 @@ RUN git clone https://github.com/google/flatbuffers.git /tmp/flatbuffers && \
 # Build Boost 1.92.0
 ARG BOOST_VERSION="1.92.0"
 RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
-    wget https://archives.boost.io/release/1.92.0/source/boost_$BOOST_VERSION_DASH.tar.bz2 && \
-    tar -xf boost_$BOOST_VERSION_DASH.tar.bz2 && \
+    wget https://archives.boost.io/release/1.92.0/source/boost_$BOOST_VERSION_DASH.tar.gz && \
+    tar -xf boost_$BOOST_VERSION_DASH.tar.gz && \
     if [ -d "boost_$BOOST_VERSION_DASH" ]; then \
         BOOST_DIR="boost_$BOOST_VERSION_DASH"; \
     else \
@@ -102,6 +102,6 @@ RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
             -j2; \
     fi && \
     cd .. && \
-    rm -rf "$BOOST_DIR" boost_$BOOST_VERSION_DASH.tar.bz2
+    rm -rf "$BOOST_DIR" boost_$BOOST_VERSION_DASH.tar.gz
 
 WORKDIR /src
