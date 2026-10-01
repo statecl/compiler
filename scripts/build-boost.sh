@@ -50,9 +50,15 @@ elif [ "$BUILD_VARIANT" = "Debug" ]; then
         variant=debug debug-symbols=on link=shared runtime-link=shared \
         -j2
 else
+    # cxxflags=-fPIC is what Boost.Build needs for the static flavour: unlike the
+    # cmake scripts, there is no CMAKE_POSITION_INDEPENDENT_CODE to set, and b2
+    # compiles a link=static target without -fPIC by default. The two branches
+    # above use link=shared, where PIC is implied, so this is the only place in
+    # this script that needs it.
     ./b2 install \
         $BOOST_LIBS \
         variant=release debug-symbols=off link=static runtime-link=static optimization=speed \
+        cxxflags=-fPIC \
         -j2
 fi
 
