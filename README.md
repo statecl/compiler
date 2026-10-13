@@ -16,13 +16,7 @@ and full documentation tooling.
 | Distro | Base Image | libc | Static | Sanitizers |
 |--------|-----------|------|--------|------------|
 | alpine | `alpine:3.24.1` | musl | ✅ | ❌ |
-| debian | `debian:trixie-20260803` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| ubuntu | `ubuntu:noble-20260730.1` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| fedora | `fedora:45` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| rocky | `rockylinux:9.3` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| alma | `almalinux:10.2` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| oracle | `oraclelinux:10` | glibc | ❌ | ASAN, TSAN, UBSAN |
-| amazon | `amazonlinux:2023.12.20260727.0` | glibc | ❌ | ASAN, TSAN, UBSAN |
+| debian | `debian:trixie-20261005` | glibc | ❌ | ASAN, TSAN, UBSAN |
 
 > Alpine is the only image with static linking and musl libc.
 > All glibc-based images support sanitizers; Alpine does not.
@@ -81,27 +75,11 @@ docker build -f alpine/Dockerfile \
   --build-arg BUILD_VARIANT=Release \
   -t myimage:release-alpine .
 
-# Debian / Ubuntu (apt-based)
-docker build -f ubuntu/Dockerfile \
+# Debian (apt-based)
+docker build -f debian/Dockerfile \
   --build-arg BUILD_VARIANT=Debug \
   --build-arg SANITIZER=asan \
   -t myimage:debug-asan-ubuntu .
-
-# Fedora / Rocky / Alma (dnf-based, with ccache)
-docker build -f fedora/Dockerfile \
-  --build-arg BUILD_VARIANT=Release \
-  -t myimage:release-fedora .
-
-# Oracle Linux (dnf, no ccache)
-docker build -f oracle/Dockerfile \
-  --build-arg BUILD_VARIANT=Debug \
-  --build-arg SANITIZER=tsan \
-  -t myimage:debug-tsan-oracle .
-
-# Amazon Linux (dnf, no ccache)
-docker build -f amazon/Dockerfile \
-  --build-arg BUILD_VARIANT=Release \
-  -t myimage:release-amazon .
 ```
 
 ---
@@ -113,10 +91,10 @@ docker build -f amazon/Dockerfile \
 Pipeline on `master` push or `v*` tag trigger:
 
 ```
-build:amd64  →  Alpine (2 variants) + glibc (7 distros × 5 variants)  = 37 jobs
-build:arm64  →  Alpine (2 variants) + glibc (7 distros × 5 variants)  = 37 jobs
+build:amd64  →  Alpine (2 variants) + glibc (1 distros × 5 variants)  = 7 jobs
+build:arm64  →  Alpine (2 variants) + glibc (1 distros × 5 variants)  = 7 jobs
                  ─────────────────────────────────────────────────────────────
-Total: 74 parallel builds
+Total: 14 parallel builds
 ```
 
 ### GitHub Actions
@@ -147,12 +125,6 @@ All images are built for `linux/amd64` and `linux/arm64`:
 environment/
 ├── alpine/Dockerfile       # Alpine 3.24.1, musl, static
 ├── debian/Dockerfile       # Debian Bookworm 20260803, glibc
-├── ubuntu/Dockerfile       # Ubuntu Noble 24.04, glibc
-├── fedora/Dockerfile       # Fedora 45, glibc
-├── rocky/Dockerfile        # Rocky Linux 9.3, glibc
-├── alma/Dockerfile         # AlmaLinux 10.2, glibc
-├── oracle/Dockerfile       # Oracle Linux 10, glibc
-├── amazon/Dockerfile       # Amazon Linux 2023.12, glibc
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   ├── build-boost.sh        # Shared Boost build
@@ -169,10 +141,10 @@ environment/
 
 ## Quick Reference
 
-| Feature | Alpine | Debian/Ubuntu | Fedora/Alma | Rocky | Oracle | Amazon |
-|---------|--------|---------------|-------------|-------|--------|--------|
-| Package manager | `apk` | `apt` | `dnf` | `dnf` | `dnf` | `dnf` |
-| ccache | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| gcovr / lcov | ✅ | ✅ | ✅ | lcov only | ❌ | ❌ |
-| Static linking | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Sanitizers | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature | Alpine | Debian |
+|---------|--------|--------|
+| Package manager | `apk` | `apt` |
+| ccache | ✅ | ✅ |
+| gcovr / lcov | ✅ | ✅ |
+| Static linking | ✅ | ❌ |
+| Sanitizers | ❌ | ✅ |
