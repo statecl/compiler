@@ -1,4 +1,4 @@
-FROM amazonlinux:2023.12.20260831.0 AS base
+FROM amazonlinux:2023.12.20260930.0 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
