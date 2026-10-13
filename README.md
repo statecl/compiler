@@ -16,7 +16,7 @@ and full documentation tooling.
 | Distro | Base Image | libc | Static | Sanitizers |
 |--------|-----------|------|--------|------------|
 | alpine | `alpine:3.24.1` | musl | ✅ | ❌ |
-| debian | `debian:bookworm-20260803` | glibc | ❌ | ASAN, TSAN, UBSAN |
+| debian | `debian:trixie-20260803` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | ubuntu | `ubuntu:noble-20260730.1` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | fedora | `fedora:45` | glibc | ❌ | ASAN, TSAN, UBSAN |
 | rocky | `rockylinux:9.3` | glibc | ❌ | ASAN, TSAN, UBSAN |
