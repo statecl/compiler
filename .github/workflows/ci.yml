@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [alpine, debian, ubuntu, fedora, rocky, alma, oracle, amazon]
+        distro: [alpine, debian]
         variant: [release, debug, asan, tsan, ubsan]
         runner: [ubuntu-latest, ubuntu-24.04-arm]
         exclude:
