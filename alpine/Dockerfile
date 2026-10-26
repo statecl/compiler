@@ -44,6 +44,7 @@ RUN apk update && apk add --no-cache \
     libpsl-static \
     libunistring-static \
     linux-headers \
+    coreutils \
     ca-certificates
 
 RUN if [ "$BUILD_VARIANT" = "Debug" ]; then \

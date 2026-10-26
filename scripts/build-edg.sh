@@ -19,6 +19,19 @@ GCC_MINOR="${GCC_MINOR:-0}"
 GCC_PATCH="${GCC_PATCH:-0}"
 GNU_VERSION=$(printf '%d%02d%02d' "$GCC_MAJOR" "$GCC_MINOR" "$GCC_PATCH")
 
+GNU_TARGET=$("$GXX_PATH" -dumpmachine 2>/dev/null || true)
+EXTRA_CXXFLAGS=""
+case "$GNU_TARGET" in
+    *musl*)
+        EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -D__isnan=__builtin_isnan -D__finite=__builtin_isfinite"
+        ;;
+esac
+case "$GNU_TARGET" in
+    aarch64*)
+        EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DFLOAT128_ENABLING_POSSIBLE=0 -DUSE_FLOAT128_FOR_HOST_FP_VALUE=0"
+        ;;
+esac
+
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -55,7 +68,7 @@ export EDG_BASE="$PWD"
 make -j"$JOBS" \
     CXX="$GXX_PATH" \
     LDFLAGS="-std=c++14" \
-    CXXFLAGS="-std=c++14 -x c++ -DIL_SHOULD_BE_WRITTEN_TO_FILE"
+    CXXFLAGS="-std=c++14 -x c++ -DIL_SHOULD_BE_WRITTEN_TO_FILE $EXTRA_CXXFLAGS"
 
 cat <<'EOF' >> edg_eccp_config
 EDG_DEFAULT_INCLUDE_DIRS="$gpp_incl_paths:$EDG_BASE/include"
