@@ -1,4 +1,4 @@
-FROM alpine:3.24.2 AS base
+FROM alpine:3.24.3 AS base
 
 ARG BUILD_VARIANT=Release
 ARG EDG_VERSION=7.0
