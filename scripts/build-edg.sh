@@ -4,6 +4,7 @@ set -euo pipefail
 EDG_VERSION="${EDG_VERSION:-7.0}"
 EDG_URL="${EDG_URL:-https://www.edg.com/edgcpfe_${EDG_VERSION}.tar.gz}"
 EDG_PREFIX="${EDG_PREFIX:-/opt/edg}"
+BIN_DIR="${BIN_DIR:-/usr/local/bin}"
 CXX="${CXX:-g++}"
 CC="${CC:-gcc}"
 JOBS="${JOBS:-2}"
@@ -47,9 +48,6 @@ chmod u+w edg_eccp_config
     cat <<'EOF'
 export EDG_LIB_ECCP_FLAGS="--g++ --gnu_version=$GNU_VERSION"
 export EDG_CPFE_DEFAULT_OPTIONS="${EDG_CPFE_DEFAULT_OPTIONS:-} --g++ --gnu_version=$GNU_VERSION"
-EDG_DEFAULT_INCLUDE_DIRS="$gpp_incl_paths:$EDG_BASE/include"
-EDG_INCLDIR="$EDG_DEFAULT_INCLUDE_DIRS"
-EDG_CINCLDIR="$EDG_DEFAULT_INCLUDE_DIRS:$EDG_GCC_DIR/include"
 EOF
 } >> edg_eccp_config
 
@@ -59,13 +57,19 @@ make -j"$JOBS" \
     LDFLAGS="-std=c++14" \
     CXXFLAGS="-std=c++14 -x c++ -DIL_SHOULD_BE_WRITTEN_TO_FILE"
 
+cat <<'EOF' >> edg_eccp_config
+EDG_DEFAULT_INCLUDE_DIRS="$gpp_incl_paths:$EDG_BASE/include"
+EDG_INCLDIR="$EDG_DEFAULT_INCLUDE_DIRS"
+EDG_CINCLDIR="$EDG_DEFAULT_INCLUDE_DIRS:$EDG_GCC_DIR/include"
+EOF
+
 install -d "$EDG_PREFIX"
 cp -a bin include lib edg_eccp_config "$EDG_PREFIX/"
 chmod 0444 "$EDG_PREFIX/edg_eccp_config"
 
-install -d /usr/local/bin
+install -d "$BIN_DIR"
 for file in "$EDG_PREFIX"/bin/* "$EDG_PREFIX"/lib/edg_prelink "$EDG_PREFIX"/lib/edg_decode "$EDG_PREFIX"/lib/edg_munch "$EDG_PREFIX"/lib/cfe_daemon_client; do
-    ln -sf "$file" "/usr/local/bin/$(basename "$file")"
+    ln -sf "$file" "$BIN_DIR/$(basename "$file")"
 done
 
 cd /
