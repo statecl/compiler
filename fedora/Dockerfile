@@ -2,6 +2,7 @@ FROM fedora:46 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
+ARG EDG_VERSION=7.0
 
 RUN dnf install -y \
     gcc-c++ \
@@ -77,5 +78,10 @@ RUN RE2_VERSION=2024-07-02 \
     BUILD_VARIANT=$BUILD_VARIANT \
     SANITIZER=$SANITIZER \
     /tmp/build-re2.sh
+
+COPY scripts/build-edg.sh /tmp/build-edg.sh
+RUN EDG_VERSION=$EDG_VERSION /tmp/build-edg.sh
+
+ENV EDG_BASE=/opt/edg
 
 WORKDIR /src

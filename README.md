@@ -10,8 +10,12 @@ Includes pre-compiled dependencies (Boost, FlatBuffers, fmt, GoogleTest, RE2) an
 ## Available Images
 
 All images include GCC + Clang, CMake, Boost 1.92.0, FlatBuffers v23.5.26,
-fmt 11.0.2, GoogleTest (03597a01), RE2 2024-07-02, ccache (except Oracle Linux, Amazon Linux),
-and full documentation tooling.
+fmt 11.0.2, GoogleTest (03597a01), RE2 2024-07-02, EDG C/C++ Compiler 7.0,
+ccache (except Oracle Linux, Amazon Linux), and full documentation tooling.
+
+EDG is installed under `/opt/edg` and exposed as `edgcpfe`, `edgcpdisp`,
+`eccp`, `edg_prelink`, `edg_decode`, and `edg_munch` in `/usr/local/bin`.
+`EDG_BASE=/opt/edg` is set in the image.
 
 | Distro | Base Image | libc | Static | Sanitizers |
 |--------|-----------|------|--------|------------|
@@ -43,6 +47,7 @@ Sanitizer variants instrument all dependencies (Boost + FlatBuffers + fmt + Goog
 |-----|---------|--------|-------------|
 | `BUILD_VARIANT` | `Release` | `Release`, `Debug` | Optimisation level and debug symbols |
 | `SANITIZER` | `off` | `off`, `asan`, `tsan`, `ubsan` | Sanitizer to enable (ignored on Alpine) |
+| `EDG_VERSION` | `7.0` | EDG release | EDG C/C++ Compiler version to install |
 
 ---
 
@@ -53,6 +58,16 @@ FROM ghcr.io/statecl/compiler:latest-release-debian
 # or
 FROM ghcr.io/statecl/compiler:latest-debug-asan-ubuntu
 ```
+
+### EDG Compiler
+
+```bash
+edgcpfe --version
+eccp main.cpp -o main
+```
+
+EDG Compiler is distributed under the Apache License 2.0 with LLVM
+exceptions. See https://github.com/edgcpp/compiler for details.
 
 ### Tag Pattern
 
@@ -128,6 +143,7 @@ environment/
 ├── scripts/
 │   ├── build-flatbuffers.sh  # Shared FlatBuffers build
 │   ├── build-boost.sh        # Shared Boost build
+│   ├── build-edg.sh          # Shared EDG C/C++ Compiler build
 │   ├── build-fmt.sh          # Shared fmtlib build
 │   ├── build-googletest.sh   # Shared GoogleTest build
 │   └── build-re2.sh          # Shared RE2 build (builds Abseil from source)

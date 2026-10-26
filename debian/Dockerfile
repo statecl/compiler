@@ -2,6 +2,7 @@ FROM debian:trixie-20261005 AS base
 
 ARG BUILD_VARIANT=Release
 ARG SANITIZER=off
+ARG EDG_VERSION=7.0
 
 # Prevent debconf from prompting
 ENV DEBIAN_FRONTEND=noninteractive
@@ -78,5 +79,10 @@ RUN RE2_VERSION=2024-07-02 \
     SANITIZER=$SANITIZER \
     /tmp/build-re2.sh && \
     ldconfig
+
+COPY scripts/build-edg.sh /tmp/build-edg.sh
+RUN EDG_VERSION=$EDG_VERSION /tmp/build-edg.sh
+
+ENV EDG_BASE=/opt/edg
 
 WORKDIR /src

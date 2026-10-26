@@ -1,6 +1,7 @@
 FROM alpine:3.24.2 AS base
 
 ARG BUILD_VARIANT=Release
+ARG EDG_VERSION=7.0
 
 # System Dependencies (Merged from throttr and setup.sh)
 RUN apk update && apk add --no-cache \
@@ -103,5 +104,10 @@ RUN BOOST_VERSION_DASH=$(echo $BOOST_VERSION | sed 's/\./_/g') && \
     fi && \
     cd .. && \
     rm -rf "$BOOST_DIR" boost_$BOOST_VERSION_DASH.tar.gz
+
+COPY scripts/build-edg.sh /tmp/build-edg.sh
+RUN EDG_VERSION=$EDG_VERSION /tmp/build-edg.sh
+
+ENV EDG_BASE=/opt/edg
 
 WORKDIR /src
