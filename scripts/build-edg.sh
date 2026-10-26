@@ -21,6 +21,7 @@ GNU_VERSION=$(printf '%d%02d%02d' "$GCC_MAJOR" "$GCC_MINOR" "$GCC_PATCH")
 
 GNU_TARGET=$("$GXX_PATH" -dumpmachine 2>/dev/null || true)
 EXTRA_CXXFLAGS=""
+EXTRA_C_TO_OBJ_OPTIONS=""
 case "$GNU_TARGET" in
     *musl*)
         EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -D__isnan=__builtin_isnan -D__finite=__builtin_isfinite"
@@ -28,7 +29,8 @@ case "$GNU_TARGET" in
 esac
 case "$GNU_TARGET" in
     aarch64*)
-        EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DFLOAT128_ENABLING_POSSIBLE=0 -DUSE_FLOAT128_FOR_HOST_FP_VALUE=0 -DAPPROXIMATE_QUADMATH=0"
+        EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -D__float128=_Float128"
+        EXTRA_C_TO_OBJ_OPTIONS="-D__float128=_Float128"
         ;;
 esac
 
@@ -58,6 +60,9 @@ chmod u+w edg_eccp_config
 
 {
     echo "GNU_VERSION=$GNU_VERSION"
+    if [ -n "$EXTRA_C_TO_OBJ_OPTIONS" ]; then
+        printf 'EDG_C_TO_OBJ_DEFAULT_OPTIONS="$EDG_C_TO_OBJ_DEFAULT_OPTIONS %s"\n' "$EXTRA_C_TO_OBJ_OPTIONS"
+    fi
     cat <<'EOF'
 export EDG_LIB_ECCP_FLAGS="--g++ --gnu_version=$GNU_VERSION"
 export EDG_CPFE_DEFAULT_OPTIONS="${EDG_CPFE_DEFAULT_OPTIONS:-} --g++ --gnu_version=$GNU_VERSION"
